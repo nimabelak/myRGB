@@ -11,6 +11,7 @@ class UDPController extends GetxController {
   final green = 255.obs;
   final blue = 255.obs;
   final brightness = 10.obs;
+  final prevBrightness = 0.obs;
   final mode = 0.obs;
   final turnOff = false.obs;
   var dropdownValue = 'Static'.obs;
@@ -43,7 +44,7 @@ class UDPController extends GetxController {
       brightness.value,
       mode.value
     ];
-    print(data);
+    //print(data);
     _udpSocket?.send(data, InternetAddress(ipAddress.value), 8080);
   }
 

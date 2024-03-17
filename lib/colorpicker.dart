@@ -86,6 +86,23 @@ class RGBColorPickerScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   udpcontroller.turnOff.value = !udpcontroller.turnOff.value;
+                  if (udpcontroller.turnOff.value) {
+                    // Turning off
+                    print(udpcontroller.prevBrightness.value);
+                    print(udpcontroller.brightness.value);
+                    udpcontroller.prevBrightness.value =
+                        udpcontroller.brightness.value;
+                    udpcontroller.brightness.value = 0;
+
+                    udpcontroller.discoverDevice();
+                  } else {
+                    // Turning on
+                    udpcontroller.brightness.value =
+                        udpcontroller.prevBrightness.value;
+                    print(udpcontroller.brightness.value);
+                    print(udpcontroller.prevBrightness.value);
+                    udpcontroller.discoverDevice();
+                  }
                 },
               ),
             ),
@@ -279,9 +296,6 @@ class RGBColorPickerScreen extends StatelessWidget {
                       value: udpcontroller.brightness.value.toDouble(),
                       onChanged: (value) {
                         udpcontroller.brightness.value = value.toInt();
-                      },
-                      onChangeEnd: (newValue) {
-                        udpcontroller.brightness.value = newValue.toInt();
                         setParams(
                             controller._selectedColor.value.red,
                             controller._selectedColor.value.green,
@@ -289,9 +303,12 @@ class RGBColorPickerScreen extends StatelessWidget {
                             udpcontroller.brightness.value,
                             udpcontroller.mode.value);
                       },
-                      min: 5,
+                      onChangeEnd: (newValue) {
+                        udpcontroller.brightness.value = newValue.toInt();
+                      },
+                      min: 0,
                       max: 255,
-                      divisions: 18,
+                      divisions: 128,
                     ),
                     SizedBox(
                       height: 32,
@@ -321,7 +338,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                             udpcontroller.brightness.value,
                             udpcontroller.mode.value);
 
-                        print('Selected index: $selectedIndex');
+                        //print('Selected index: $selectedIndex');
                       },
                       items: dropdownValues
                           .map<DropdownMenuItem<String>>((String value) {
