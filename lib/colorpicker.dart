@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
-import 'package:myrgb/main.dart';
 import 'package:myrgb/server.dart';
 import 'package:myrgb/udp_connect.dart';
 
@@ -28,16 +26,6 @@ class RGBColorPickerController extends GetxController {
     super.onClose();
   }
 
-  void changeColor(Color color) {
-    _selectedColor.value = color;
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 50), () {
-      debugPrint("RED IS : ${color.red}");
-      debugPrint("GREEN IS : ${color.green}");
-      debugPrint("BLUE IS : ${color.blue}");
-    });
-  }
-
   void changeIndex(int index) {
     _currentIndex.value = index;
   }
@@ -48,9 +36,38 @@ class RGBColorPickerScreen extends StatelessWidget {
   final udpcontroller = Get.put(UDPController());
   final serverService = Get.put(ServerService());
 
+  void setParams(int red, int green, int blue, int brightness, int mode) {
+    udpcontroller.red.value = red;
+    udpcontroller.green.value = green;
+    udpcontroller.blue.value = blue;
+    udpcontroller.brightness.value = brightness;
+    udpcontroller.mode.value = mode;
+    udpcontroller.discoverDevice();
+  }
+
+  void changeColor(Color color) {
+    controller._selectedColor.value = color;
+    setParams(
+      controller._selectedColor.value.red,
+      controller._selectedColor.value.green,
+      controller._selectedColor.value.blue,
+      udpcontroller.brightness.value,
+      udpcontroller.mode.value,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     //serverService.connectToServer();
+    final List<String> dropdownValues = [
+      'Static',
+      'Rainbow',
+      'ColorWipe',
+      'TheaterChase',
+      'Breathing',
+      'Comet',
+      'TheaterChase2',
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -61,172 +78,267 @@ class RGBColorPickerScreen extends StatelessWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: IconButton(
-              icon: const Icon(Icons.power_settings_new),
-              onPressed: () {
-                // Handle power button press
-              },
+            child: Obx(
+              () => IconButton(
+                icon: Icon(
+                  Icons.power_settings_new,
+                  color: udpcontroller.turnOff.value ? Colors.red : Colors.grey,
+                ),
+                onPressed: () {
+                  udpcontroller.turnOff.value = !udpcontroller.turnOff.value;
+                },
+              ),
             ),
           ),
         ],
         backgroundColor: const Color.fromARGB(255, 20, 43, 66),
       ),
       backgroundColor: const Color.fromARGB(255, 20, 43, 66),
-      body: IndexedStack(
-        index: controller.currentIndex,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              children: [
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+      body: Obx(
+        () => SingleChildScrollView(
+          child: IndexedStack(
+            index: controller.currentIndex,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
                   children: [
-                    Icon(
-                      Icons.wifi,
-                      size: 32,
+                    Obx(
+                      () => ColorPicker(
+                        displayThumbColor: true,
+                        enableAlpha: false,
+                        colorPickerWidth: 380.0,
+                        pickerAreaHeightPercent: 0.7,
+                        paletteType: PaletteType.hueWheel,
+                        pickerColor: controller.selectedColor,
+                        onColorChanged: changeColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(255, 0, 0, udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 255, 0, 0);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 255, 0, 0),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(0, 255, 0, udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 0, 255, 0);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 0, 255, 0),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(0, 0, 255, udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 0, 0, 255);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 0, 0, 255),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(
+                                255,
+                                255,
+                                0,
+                                udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 255, 255, 0);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 255, 255, 0),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(
+                                255,
+                                0,
+                                255,
+                                udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 255, 0, 255);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 255, 0, 255),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(
+                                0,
+                                255,
+                                255,
+                                udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 0, 255, 255);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 0, 255, 255),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            setParams(
+                                255,
+                                70,
+                                10,
+                                udpcontroller.brightness.value,
+                                udpcontroller.mode.value);
+                            controller._selectedColor.value =
+                                const Color.fromARGB(255, 255, 70, 10);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 255, 70, 10),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     SizedBox(
-                      width: 16,
+                      height: 32,
                     ),
-                  ],
-                ),
-                Obx(
-                  () => ColorPicker(
-                    displayThumbColor: true,
-                    enableAlpha: false,
-                    colorPickerWidth: 380.0,
-                    pickerAreaHeightPercent: 0.7,
-                    paletteType: PaletteType.hueWheel,
-                    pickerColor: controller.selectedColor,
-                    onColorChanged: controller.changeColor,
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        udpcontroller.discoverDevice();
+                    Text(
+                      "Brightness",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    Slider(
+                      activeColor: Colors.cyan[300],
+                      inactiveColor: Colors.cyan[100],
+                      value: udpcontroller.brightness.value.toDouble(),
+                      onChanged: (value) {
+                        udpcontroller.brightness.value = value.toInt();
+                      },
+                      onChangeEnd: (newValue) {
+                        udpcontroller.brightness.value = newValue.toInt();
+                        setParams(
+                            controller._selectedColor.value.red,
+                            controller._selectedColor.value.green,
+                            controller._selectedColor.value.blue,
+                            udpcontroller.brightness.value,
+                            udpcontroller.mode.value);
+                      },
+                      min: 5,
+                      max: 255,
+                      divisions: 18,
+                    ),
+                    SizedBox(
+                      height: 32,
+                    ),
+                    Text(
+                      "Mode",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    DropdownButton<String>(
+                      value: udpcontroller.dropdownValue.value,
+                      style: TextStyle(
+                        color: Colors.cyan[100],
+                      ),
+                      onChanged: (String? newValue) {
+                        udpcontroller.dropdownValue.value = newValue!;
 
-                        controller._selectedColor.value =
-                            const Color.fromARGB(255, 255, 0, 0);
+                        int selectedIndex = dropdownValues.indexOf(newValue);
+                        udpcontroller.mode.value = selectedIndex;
+                        setParams(
+                            controller._selectedColor.value.red,
+                            controller._selectedColor.value.green,
+                            controller._selectedColor.value.blue,
+                            udpcontroller.brightness.value,
+                            udpcontroller.mode.value);
+
+                        print('Selected index: $selectedIndex');
                       },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 255, 0, 0),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
+                      items: dropdownValues
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        controller._selectedColor.value =
-                            const Color.fromARGB(255, 0, 255, 0);
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 0, 255, 0),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        controller._selectedColor.value =
-                            const Color.fromARGB(255, 0, 0, 255);
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 0, 0, 255),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        controller._selectedColor.value =
-                            const Color.fromARGB(255, 255, 255, 0);
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 255, 255, 0),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        controller._selectedColor.value =
-                            const Color.fromARGB(255, 255, 0, 255);
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 255, 0, 255),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        controller._selectedColor.value =
-                            const Color.fromARGB(255, 0, 255, 255);
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 0, 255, 255),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
+                    SizedBox(
+                      height: 42,
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const Center(
-            child: Text('Second Screen'),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Obx(
-        () => BottomNavigationBar(
-          currentIndex: controller.currentIndex,
-          onTap: controller.changeIndex,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.color_lens),
-              label: 'Color Picker',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.mode),
-              label: 'Second Screen',
-            ),
-          ],
         ),
       ),
     );
