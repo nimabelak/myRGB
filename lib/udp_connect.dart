@@ -22,6 +22,20 @@ class UDPController extends GetxController {
   int get connected => _connected.value;
   String get ip => ipAddress.value;
 
+  // Future<void> setParams(
+  //     int red, int green, int blue, int brightness, int mode) async {
+  //   _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+  //   _udpSocket?.broadcastEnabled = true;
+  //   red = red;
+  //   green = green;
+  //   blue = blue;
+  //   brightness = brightness;
+  //   mode = mode;
+  //   List<int> data = [red, blue, green, brightness, mode];
+  //   print("${red}, ${green}, ${blue}, ${brightness}, ${mode}");
+  //   _udpSocket?.send(data, InternetAddress(ipAddress.value), 8080);
+  // }
+
   @override
   void onInit() {
     discoverDevice();
@@ -58,7 +72,7 @@ class UDPController extends GetxController {
       if (event == RawSocketEvent.read) {
         Datagram? datagram = _udpAddAutoSocket?.receive();
         if (datagram != null) {
-          locator<ServerService>().handleConnectionStatus(datagram);
+          //locator<ServerService>().handleConnectionStatus(datagram);
         }
       }
     });
