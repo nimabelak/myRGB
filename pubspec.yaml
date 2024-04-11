@@ -44,6 +44,8 @@ dependencies:
   get_it: ^7.6.4
   url_launcher: ^6.2.1
   path_provider: ^2.1.1  
+  navigation_view: ^1.0.6
+  audio_waveforms: ^1.0.5
 
 dev_dependencies:
   flutter_test:

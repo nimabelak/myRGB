@@ -1,35 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
-import 'package:myrgb/server.dart';
-import 'package:myrgb/udp_connect.dart';
-
-class RGBColorPickerController extends GetxController {
-  final UDPController udpController = Get.put(UDPController());
-  final _selectedColor = Colors.white.obs;
-  final _currentIndex = 0.obs;
-  Timer? _debounce;
-
-  Color get selectedColor => _selectedColor.value;
-  int get currentIndex => _currentIndex.value;
-
-  @override
-  void onInit() {
-    udpController.discoverDevice();
-    super.onInit();
-  }
-
-  @override
-  void onClose() {
-    _debounce?.cancel();
-    super.onClose();
-  }
-
-  void changeIndex(int index) {
-    _currentIndex.value = index;
-  }
-}
+import 'package:myrgb/controllers/rgb_controller.dart';
+import 'package:myrgb/network/server.dart';
+import 'package:myrgb/network/udp_connect.dart';
 
 class RGBColorPickerScreen extends StatelessWidget {
   final controller = Get.put(RGBColorPickerController());
@@ -46,11 +20,11 @@ class RGBColorPickerScreen extends StatelessWidget {
   }
 
   void changeColor(Color color) {
-    controller._selectedColor.value = color;
+    controller.selectedColor.value = color;
     setParams(
-      controller._selectedColor.value.red,
-      controller._selectedColor.value.green,
-      controller._selectedColor.value.blue,
+      controller.selectedColor.value.red,
+      controller.selectedColor.value.green,
+      controller.selectedColor.value.blue,
       udpcontroller.brightness.value,
       udpcontroller.mode.value,
     );
@@ -112,11 +86,10 @@ class RGBColorPickerScreen extends StatelessWidget {
       ),
       backgroundColor: const Color.fromARGB(255, 20, 43, 66),
       body: Obx(
-        () => SingleChildScrollView(
-          child: IndexedStack(
-            index: controller.currentIndex,
-            children: [
-              Padding(
+        () => Stack(
+          children: [
+            SingleChildScrollView(
+              child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
                   children: [
@@ -127,7 +100,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                         colorPickerWidth: 380.0,
                         pickerAreaHeightPercent: 0.7,
                         paletteType: PaletteType.hueWheel,
-                        pickerColor: controller.selectedColor,
+                        pickerColor: controller.selectedColor.value,
                         onColorChanged: changeColor,
                       ),
                     ),
@@ -141,7 +114,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                             setParams(255, 0, 0, udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
 
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 255, 0, 0);
                           },
                           child: Container(
@@ -159,7 +132,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                           onTap: () {
                             setParams(0, 255, 0, udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 0, 255, 0);
                           },
                           child: Container(
@@ -177,7 +150,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                           onTap: () {
                             setParams(0, 0, 255, udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 0, 0, 255);
                           },
                           child: Container(
@@ -199,7 +172,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                                 0,
                                 udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 255, 255, 0);
                           },
                           child: Container(
@@ -221,7 +194,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                                 255,
                                 udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 255, 0, 255);
                           },
                           child: Container(
@@ -243,7 +216,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                                 255,
                                 udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 0, 255, 255);
                           },
                           child: Container(
@@ -265,7 +238,7 @@ class RGBColorPickerScreen extends StatelessWidget {
                                 10,
                                 udpcontroller.brightness.value,
                                 udpcontroller.mode.value);
-                            controller._selectedColor.value =
+                            controller.selectedColor.value =
                                 const Color.fromARGB(255, 255, 70, 10);
                           },
                           child: Container(
@@ -297,9 +270,9 @@ class RGBColorPickerScreen extends StatelessWidget {
                       onChanged: (value) {
                         udpcontroller.brightness.value = value.toInt();
                         setParams(
-                            controller._selectedColor.value.red,
-                            controller._selectedColor.value.green,
-                            controller._selectedColor.value.blue,
+                            controller.selectedColor.value.red,
+                            controller.selectedColor.value.green,
+                            controller.selectedColor.value.blue,
                             udpcontroller.brightness.value,
                             udpcontroller.mode.value);
                       },
@@ -332,9 +305,9 @@ class RGBColorPickerScreen extends StatelessWidget {
                         int selectedIndex = dropdownValues.indexOf(newValue);
                         udpcontroller.mode.value = selectedIndex;
                         setParams(
-                            controller._selectedColor.value.red,
-                            controller._selectedColor.value.green,
-                            controller._selectedColor.value.blue,
+                            controller.selectedColor.value.red,
+                            controller.selectedColor.value.green,
+                            controller.selectedColor.value.blue,
                             udpcontroller.brightness.value,
                             udpcontroller.mode.value);
 
@@ -349,13 +322,14 @@ class RGBColorPickerScreen extends StatelessWidget {
                       }).toList(),
                     ),
                     SizedBox(
-                      height: 42,
+                      height: 62,
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            //Positioned(bottom: 0, right: 0, left: 0, child: App()),
+          ],
         ),
       ),
     );

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
-import 'package:myrgb/udp_connect.dart';
+import 'package:myrgb/network/udp_connect.dart';
 
 class ServerService {
   final UDPController udpController = Get.put(UDPController());

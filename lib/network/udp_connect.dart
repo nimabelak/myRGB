@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:myrgb/main.dart';
-import 'package:myrgb/server.dart';
+import 'package:myrgb/network/server.dart';
 
 class UDPController extends GetxController {
   final _connected = 0.obs;
@@ -22,19 +22,18 @@ class UDPController extends GetxController {
   int get connected => _connected.value;
   String get ip => ipAddress.value;
 
-  // Future<void> setParams(
-  //     int red, int green, int blue, int brightness, int mode) async {
-  //   _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
-  //   _udpSocket?.broadcastEnabled = true;
-  //   red = red;
-  //   green = green;
-  //   blue = blue;
-  //   brightness = brightness;
-  //   mode = mode;
-  //   List<int> data = [red, blue, green, brightness, mode];
-  //   print("${red}, ${green}, ${blue}, ${brightness}, ${mode}");
-  //   _udpSocket?.send(data, InternetAddress(ipAddress.value), 8080);
-  // }
+  Future<void> setParams(
+      int red, int green, int blue, int brightness, int mode) async {
+    _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+    _udpSocket?.broadcastEnabled = true;
+    red = red;
+    green = green;
+    blue = blue;
+    brightness = brightness;
+    mode = mode;
+    List<int> data = [red, blue, green, brightness, mode];
+    _udpSocket?.send(data, InternetAddress(ipAddress.value), 8080);
+  }
 
   @override
   void onInit() {
