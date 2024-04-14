@@ -11,17 +11,19 @@ import 'package:myrgb/widgets/music_card.dart';
 import 'package:myrgb/widgets/player.dart';
 import 'package:get/get.dart';
 
+class RecorderControllerWrapper extends GetxController {
+  final RecorderController recorderController = RecorderController();
+}
+
 class Music extends StatelessWidget {
   final musicController = Get.put(MusicController());
   final recordController = Get.put(RecordController());
   final udpcontroller = Get.put(UDPController());
   Timer? timer;
-  late RecorderController recorderController;
   double lastSentValue = 0;
 
   @override
   Widget build(BuildContext context) {
-    recorderController = RecorderController();
     return Scaffold(
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 20, 43, 66),
@@ -51,6 +53,10 @@ class Music extends StatelessWidget {
                                 musicController.currentlyPlayingIndex.value ==
                                         index &&
                                     musicController.isPlaying.value,
+                            isPaused:
+                                musicController.currentlyPlayingIndex.value ==
+                                        index &&
+                                    musicController.isPaused.value,
                             onCardTapped: () async {
                               await recorderController.record();
 

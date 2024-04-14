@@ -13,7 +13,6 @@ class RecordController extends GetxController {
   final MethodChannel _methodChannel = const MethodChannel('getDecibel');
   double _maxPeak = Platform.isIOS ? 1 : 32786.0;
   double _currentMin = 0;
-  final RxList<double> _waveData = <double>[].obs;
   var isRecording = false.obs;
 
   var lastValue = 0.0.obs;

@@ -34,7 +34,7 @@ class App extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
               color: Colors.cyan[300],
               curve: Curves.ease,
-              durationAnimation: const Duration(milliseconds: 250),
+              durationAnimation: const Duration(milliseconds: 400),
               items: [
                 ItemNavigationView(
                     childAfter: Icon(
@@ -45,7 +45,7 @@ class App extends StatelessWidget {
                     childBefore: Icon(
                       Icons.music_note_outlined,
                       color: Colors.grey.withAlpha(60),
-                      size: 28,
+                      size: 30,
                     )),
                 ItemNavigationView(
                     childAfter: Icon(
@@ -56,7 +56,7 @@ class App extends StatelessWidget {
                     childBefore: Icon(
                       Icons.color_lens_outlined,
                       color: Colors.grey.withAlpha(60),
-                      size: 28,
+                      size: 30,
                     )),
               ],
             ),

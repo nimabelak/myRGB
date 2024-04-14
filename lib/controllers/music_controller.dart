@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:external_path/external_path.dart';
+import 'package:flutter/material.dart';
+import 'package:myrgb/Pages/music.dart';
 import 'package:myrgb/controllers/record_controller.dart';
 import 'package:myrgb/network/udp_connect.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,6 +12,11 @@ import 'package:get/get.dart';
 import 'dart:io';
 import 'dart:async';
 
+RecorderControllerWrapper recorderControllerWrapper =
+    Get.put(RecorderControllerWrapper());
+RecorderController recorderController =
+    recorderControllerWrapper.recorderController;
+
 class MusicController extends GetxController {
   final recordController = Get.put(RecordController());
   final udpcontroller = Get.put(UDPController());
@@ -17,19 +24,20 @@ class MusicController extends GetxController {
   var files = <FileSystemEntity>[].obs;
   var currentlyPlayingIndex = (-1).obs;
   var isPlaying = false.obs;
+  var isPaused = false.obs;
   var currentPosition = 0.0.obs;
   var totalDuration = 0.0.obs;
   var sliderVal = 0.0.obs;
+  var isMusicCardPressed = false.obs;
   Timer? _positionUpdateTimer;
 
   Timer? timer;
   double lastSentValue = 0;
-  RecorderController? recorderController;
 
   void closeMusic() async {
     pauseSong();
     timer?.cancel();
-    await recorderController?.stop();
+    await recorderController.stop();
     currentlyPlayingIndex = (-1).obs;
     isPlaying = false.obs;
     currentPosition = 0.0.obs;
@@ -109,12 +117,15 @@ class MusicController extends GetxController {
         }
       }
     });
-
   }
 
   void pauseSong() async {
-    timer?.cancel();
-    await recorderController?.stop();
+    if (isPaused.value) {
+      await recorderController.record();
+    } else {
+      await recorderController.stop();
+    }
+
     if (currentlyPlayingIndex.value == -1) {
       // If no song is playing, start playing the current song
       playSong(currentlyPlayingIndex.value);
